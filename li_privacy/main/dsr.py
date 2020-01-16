@@ -20,7 +20,7 @@ class DSR(object):
                 help="enable verbose output")
         parser.add_argument("--staging", action="store_true", \
                 help="send to staging environment instead of production.")
-        parser.add_argument("--request-id", \
+        parser.add_argument("--request_id", \
                 help="Request ID to be submitted for tracking")
         parser.add_argument("email_address", type=str, \
                 help="the email address (or @filename of emails) to process")
@@ -51,7 +51,7 @@ class DSR(object):
 
     def constructRequestPayload(self, email_address):
         hashes = DSR.getHashes(DSR.sanitizeEmail(email_address))
-        self.request_id = self.request_id or hashes[0]
+        request_id = self.request_id or hashes[0]
         # Construct the request payload
         now = datetime.datetime.now()
         payload = { 
@@ -60,7 +60,7 @@ class DSR(object):
             "cnf": {
                 "kid": self.key_id
             },
-            "jti": self.request_id,
+            "jti": request_id,
             "iat": int(now.timestamp()),
             "exp": int((now + datetime.timedelta(hours=1)).timestamp()),
             "dsr": {
@@ -129,14 +129,28 @@ class DSR(object):
         self.request_id = args.request_id
         self.setAPIEndpoint()
 
+    def submitEmailRequest(self, email_address):
+        payload = self.constructRequestPayload(email_address)
+        jwt = self.encodeJWT(payload) 
+        response = self.submitDSRRequest(jwt)
+        return (payload, response)
+
     def exec(self, args):
         self.loadConfig(args)
         if args.email_address[0]=="@":
-            print("Process as file")
+            filename = args.email_address[1:]
+            report_name = filename + "." + str(datetime.datetime.now().timestamp()) + ".tsv"
+            print(F"Processing email addresses from file {filename}.\nSaving report to {report_name}.")
+            with open(report_name,"w") as report:
+                print("email_address\trequest_id\tresponse.ok\tresponse.text\ttimestamp", file=report)
+                with open(filename, "r") as hashlist:
+                    for index,line in enumerate(hashlist):
+                        email_address = line.strip()
+                        (payload, response) = self.submitEmailRequest(email_address)
+                        print(F"{email_address}\t{payload['jti']}\t{response.ok}\t{response.text}\t{payload['iat']}", file=report)
+                        print(F"Processing: {email_address}, success={response.ok}")
         else:
-            payload = self.constructRequestPayload(args.email_address)
-            jwt = self.encodeJWT(payload) 
-            response = self.submitDSRRequest(jwt)
+            (payload, response) = self.submitEmailRequest(args.email_address)
             if(not response.ok):
                 print("ERROR: API call returned an error.")
                 print()
