@@ -4,7 +4,20 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
-class init(object):
+class Init(object):
+    def __init__(self, subparsers):
+        config_parser = subparsers.add_parser("init", \
+                help="sets up the initial configuration")
+        config_parser.add_argument("--config", type=str, default="config.json", \
+                help="path to configuration file (Defaults to config.json)")
+        config_parser.add_argument("--domain_name", type=str, \
+                help="your website domain name")
+        config_parser.add_argument("--signing_key", type=str, default="rsa256.key", \
+                help="path to RSA-256 private signing key file")
+        config_parser.add_argument("--key_id", type=str, default="key1", \
+                help="the signing key identifier")
+        config_parser.set_defaults(func=self.exec)
+
     def generateKey(self, signing_key):
         try:
             # Attempt to read existing key
