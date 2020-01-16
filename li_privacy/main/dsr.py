@@ -18,6 +18,8 @@ class DSR(object):
                 help="callback url to be invoked.")
         parser.add_argument("--verbose", "-v", action="store_true", \
                 help="enable verbose output")
+        parser.add_argument("--prehashed", action="store_true", \
+                help="treat inputs as already hashed")
         parser.add_argument("--staging", action="store_true", \
                 help="send to staging environment instead of production.")
         parser.add_argument("--request_id", \
@@ -36,6 +38,7 @@ class DSR(object):
         self.signing_key = None
         self.endpoint = None
         self.key_id = None
+        self.prehashed = False
 
     @staticmethod
     def sanitizeEmail(email_address):
@@ -49,8 +52,11 @@ class DSR(object):
             hashlib.sha256(email_address).hexdigest()
         ]
 
-    def constructRequestPayload(self, email_address):
-        hashes = DSR.getHashes(DSR.sanitizeEmail(email_address))
+    def constructRequestPayload(self, entry):
+        if not self.prehashed:
+            hashes = DSR.getHashes(DSR.sanitizeEmail(entry))
+        else:
+            hashes = [ entry ]
         request_id = self.request_id or hashes[0]
         # Construct the request payload
         now = datetime.datetime.now()
@@ -127,30 +133,37 @@ class DSR(object):
         self.key_id = config['key_id']
         self.signing_key = config['signing_key']
         self.request_id = args.request_id
+        self.prehashed = args.prehashed
         self.setAPIEndpoint()
 
-    def submitEmailRequest(self, email_address):
-        payload = self.constructRequestPayload(email_address)
+    def processEntry(self, entry):
+        payload = self.constructRequestPayload(entry)
         jwt = self.encodeJWT(payload) 
         response = self.submitDSRRequest(jwt)
         return (payload, response)
 
     def exec(self, args):
         self.loadConfig(args)
+        if self.prehashed:
+            type = "hash"
+        else:
+            type = "email address"
+
         if args.email_address[0]=="@":
             filename = args.email_address[1:]
-            report_name = filename + "." + str(datetime.datetime.now().timestamp()) + ".tsv"
-            print(F"Processing email addresses from file {filename}.\nSaving report to {report_name}.")
+            report_name = F"{filename}.{int(datetime.datetime.now().timestamp())}.tsv"
+            print(F"Processing {type} entries from file {filename}")
             with open(report_name,"w") as report:
-                print("email_address\trequest_id\tresponse.ok\tresponse.text\ttimestamp", file=report)
+                print(F"{type}\trequest_id\tresponse.ok\tresponse.text\ttimestamp", file=report)
                 with open(filename, "r") as hashlist:
                     for index,line in enumerate(hashlist):
-                        email_address = line.strip()
-                        (payload, response) = self.submitEmailRequest(email_address)
-                        print(F"{email_address}\t{payload['jti']}\t{response.ok}\t{response.text}\t{payload['iat']}", file=report)
-                        print(F"Processing: {email_address}, success={response.ok}")
+                        entry = line.strip()
+                        (payload, response) = self.processEntry(entry)
+                        print(F"{entry}\t{payload['jti']}\t{response.ok}\t{response.text}\t{payload['iat']}", file=report)
+                        print(F"Processing: {entry}, success={response.ok}")
+            print(F"Report saved to {report_name}")
         else:
-            (payload, response) = self.submitEmailRequest(args.email_address)
+            (payload, response) = self.processEntry(args.email_address)
             if(not response.ok):
                 print("ERROR: API call returned an error.")
                 print()
