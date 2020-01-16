@@ -1,10 +1,3 @@
-"""
-THIS SPECIFIC FILE IS DISTRIBUTED UNDER THE UNLICENSE: http://unlicense.org.
-
-THIS MEANS YOU CAN USE THIS CODE EXAMPLE TO KICKSTART A PROJECT YOUR OWN.
-AFTER YOU CREATED YOUR OWN ORIGINAL WORK, YOU CAN REPLACE THIS HEADER :)
-"""
-
 import sys
 import argparse
 
@@ -12,9 +5,6 @@ from .dsr import Delete,Optout
 from .init import Init
 
 def main(name=None):
-    """This function is called when run as python3 -m ${MODULE}
-    Parse any additional arguments and call required module functions."""
-
     if sys.argv:
         # called through CLI
         module_name = __loader__.name.split('.')[0]
@@ -35,6 +25,5 @@ def main(name=None):
             parser.print_help()
             exit(1)
         func(args)
-
 
     return 0
