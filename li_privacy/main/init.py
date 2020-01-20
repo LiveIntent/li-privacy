@@ -7,15 +7,15 @@ from cryptography.hazmat.backends import default_backend
 class Init(object):
     def __init__(self, subparsers):
         config_parser = subparsers.add_parser("init", \
-                help="sets up the initial configuration")
+                help="sets up the initial configuration, storing parameters in the config file")
         config_parser.add_argument("--config", type=str, default="config.json", \
-                help="path to configuration file (Defaults to config.json)")
+                help="path to configuration file (defaults to config.json)")
         config_parser.add_argument("--domain_name", type=str, \
                 help="your website domain name")
-        config_parser.add_argument("--signing_key", type=str, default="rsa256.key", \
-                help="path to RSA-256 private signing key file")
         config_parser.add_argument("--key_id", type=str, default="key1", \
                 help="the signing key identifier")
+        config_parser.add_argument("--signing_key", type=str, \
+                help="path to RSA-256 private signing key file. Will generate a new key-pair if missing.")
         config_parser.set_defaults(func=self.exec)
 
     def generateKey(self, signing_key):
@@ -49,6 +49,13 @@ class Init(object):
 
         return private_key
 
+    def printProvisioningNotice(self, args, config):
+        print()
+        print("To provision your keys, please email the following files to privacy@liveintent.com:")
+        print(F"\t{args.config}")
+        print(F"\t{config['signing_key']}.pub")
+        print()
+
     def exec(self, args):
         # Read the config file
         try:
@@ -58,24 +65,29 @@ class Init(object):
         except IOError:
             config = {}
             print("Creating new config: %s" % args.config)
+        print()
 
         domain_name = args.domain_name or config.get('domain_name','')
         while True:
-            config['domain_name'] = input("Your website domain name: (%s) " % domain_name) or domain_name
+            if domain_name:
+                default_prompt = F"({domain_name}) "
+            else:
+                default_prompt = ""
+            config['domain_name'] = input(F"Your website domain name: {default_prompt}") or domain_name
             if not re.match("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]", config['domain_name']):
-                print("Please enter your website's top-level DNS name (i.e. publisher.com without http(s)://)")
+                print("Please enter your website's top-level DNS name only (without http(s)://)")
             else:
                 break
 
         key_id = args.key_id or config.get('key_id','')
         config['key_id'] = input("Key Identifier: (%s) " % key_id) or key_id
 
-        signing_key = args.signing_key or config.get('signing_key','')
-        config['signing_key'] = input("Path to Private RSA signing key file: (%s) " % signing_key) or signing_key
+        signing_key = args.signing_key or config.get('signing_key', config['domain_name'] + ".key")
+        config['signing_key'] = input(F"Path to Private RSA signing key file: ({signing_key}) ") or signing_key
 
         rsa_key = self.generateKey(config['signing_key'])
 
         # Write config file
         with open(args.config, "w+") as config_file:
             json.dump(config, config_file, indent=2)
-        print("Configuration written to " + args.config)
+        print(F"Configuration written to {args.config}")

@@ -10,8 +10,7 @@ def main(name=None):
         module_name = __loader__.name.split('.')[0]
         parser = argparse.ArgumentParser(
                 description="Interact with the LiveIntent Privacy API", \
-                epilog="For API documentation, see https://link.liveintent.com/privacy-api", \
-                add_help = False
+                epilog="For API documentation, see https://link.liveintent.com/privacy-api"
         )
         subparsers = parser.add_subparsers(title="actions", dest='command')
         init_action = Init(subparsers)
