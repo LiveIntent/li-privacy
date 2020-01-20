@@ -1,7 +1,5 @@
 # LiveIntent Privacy CLI
 
-[![PyPi](https://img.shields.io/pypi/v/li-privacy)](https://pypi.org/project/li-privacy/)
-
 CLI to interact with the LiveIntent Privacy API
 
 ## Install
