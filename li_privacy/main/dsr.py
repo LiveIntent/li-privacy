@@ -1,8 +1,12 @@
+import re
 import jwt
 import json
 import datetime
 import hashlib
 import requests
+import os.path
+
+EMAIL_PATTERN = """(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
 
 class DSR(object):
     def __init__(self, parser, operation):
@@ -18,14 +22,12 @@ class DSR(object):
                 help="callback url to be invoked.")
         parser.add_argument("--verbose", "-v", action="store_true", \
                 help="enable verbose output")
-        parser.add_argument("--prehashed", action="store_true", \
-                help="treat inputs as already hashed")
         parser.add_argument("--staging", action="store_true", \
                 help="send to staging environment instead of production.")
         parser.add_argument("--request_id", \
                 help="Request ID to be submitted for tracking")
-        parser.add_argument("email_address", type=str, \
-                help="the email address (or @filename of emails) to process")
+        parser.add_argument("user", type=str, \
+                help="the email address, hash, or file of users to process")
         parser.set_defaults(func=self.exec)
 
         # Setup properties
@@ -38,25 +40,29 @@ class DSR(object):
         self.signing_key = None
         self.endpoint = None
         self.key_id = None
-        self.prehashed = False
 
     @staticmethod
-    def sanitizeEmail(email_address):
-        return email_address.encode('utf-8').strip().lower()
+    def sanitize(user):
+        return user.strip().lower()
 
     @staticmethod
     def getHashes(email_address):
+        email_address = email_address.encode('utf-8')
         return [
             hashlib.md5(email_address).hexdigest(),
             hashlib.sha1(email_address).hexdigest(),
             hashlib.sha256(email_address).hexdigest()
         ]
 
-    def constructRequestPayload(self, entry):
-        if not self.prehashed:
-            hashes = DSR.getHashes(DSR.sanitizeEmail(entry))
+    def constructRequestPayload(self, user):
+        user = DSR.sanitize(user)
+        if re.fullmatch("[a-f0-9]{32}([a-f0-9]{8}([a-f0-9]{24})?)?", user):
+            hashes = [ user ]
         else:
-            hashes = [ entry ]
+            if re.match(EMAIL_PATTERN , user):
+                hashes = DSR.getHashes(DSR.sanitize(user))
+            else:
+                raise Exception("Input does not appear to be a valid email or hash")
         request_id = self.request_id or hashes[0]
         # Construct the request payload
         now = datetime.datetime.now()
@@ -133,7 +139,6 @@ class DSR(object):
         self.key_id = config['key_id']
         self.signing_key = config['signing_key']
         self.request_id = args.request_id
-        self.prehashed = args.prehashed
         self.setAPIEndpoint()
 
     def processEntry(self, entry):
@@ -144,26 +149,28 @@ class DSR(object):
 
     def exec(self, args):
         self.loadConfig(args)
-        if self.prehashed:
-            type = "hash"
-        else:
-            type = "email address"
 
-        if args.email_address[0]=="@":
-            filename = args.email_address[1:]
+        # Test for file
+        if os.path.isfile(args.user):
+            filename = args.user
             report_name = F"{filename}.{int(datetime.datetime.now().timestamp())}.tsv"
-            print(F"Processing {type} entries from file {filename}")
+            print(F"Processing users from file {filename}")
             with open(report_name,"w") as report:
-                print(F"{type}\trequest_id\tresponse.ok\tresponse.text\ttimestamp", file=report)
+                print(F"user\trequest_id\tresponse.ok\tresponse.text\ttimestamp", file=report)
                 with open(filename, "r") as hashlist:
                     for index,line in enumerate(hashlist):
-                        entry = line.strip()
-                        (payload, response) = self.processEntry(entry)
-                        print(F"{entry}\t{payload['jti']}\t{response.ok}\t{response.text}\t{payload['iat']}", file=report)
-                        print(F"Processing: {entry}, success={response.ok}")
+                        user = line.strip()
+                        try:
+                            (payload, response) = self.processEntry(user)
+                            print(F"{user}\t{payload['jti']}\t{response.ok}\t{response.text}\t{payload['iat']}", file=report)
+                            print(F"Processing: {user}, success={response.ok}")
+                        except:
+                            print(F"{user}\t\t\tSkipped, does not appear to be a valid hash or email\t", file=report)
+                            print(F"Skipping: {user}, does not appear to be a valid hash or email")
+
             print(F"Report saved to {report_name}")
         else:
-            (payload, response) = self.processEntry(args.email_address)
+            (payload, response) = self.processEntry(args.user)
             if(not response.ok):
                 print("ERROR: API call returned an error.")
                 print()

@@ -11,7 +11,7 @@ class Init(object):
         config_parser.add_argument("--config", type=str, default="config.json", \
                 help="path to configuration file (defaults to config.json)")
         config_parser.add_argument("--domain_name", type=str, \
-                help="your website domain name")
+                help="your domain name. Use 'dailyplanet.com' to generate example keys and config")
         config_parser.add_argument("--key_id", type=str, default="key1", \
                 help="the signing key identifier")
         config_parser.add_argument("--signing_key", type=str, \
@@ -73,20 +73,21 @@ class Init(object):
                 default_prompt = F"({domain_name}) "
             else:
                 default_prompt = ""
-            config['domain_name'] = input(F"Your website domain name: {default_prompt}") or domain_name
+            config['domain_name'] = input(F"Your domain name: {default_prompt}") or domain_name
             if not re.match("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]", config['domain_name']):
-                print("Please enter your website's top-level DNS name only (without http(s)://)")
+                print("Please enter your DNS name only (i.e. publisher.com)")
             else:
                 break
+
+        config['callback_url'] = config.get("callback_url","")
 
         example_configuration = config['domain_name']=="dailyplanet.com"
         if example_configuration:
             print("Generating example key and configuration")
-            args.config = "dailyplanet.config"
+            args.config = "dailyplanet.json"
             key_id = config['key_id'] = "key1"
             signing_key = config['signing_key'] = config['domain_name'] + ".key"
             config['staging'] = True
-            config['callback_url'] = ""
 
             # These example keys are only valid in the staging environment which does not execute live transactions
             # therefore they are safe to embed in this source. These keys are also documented in our API guide
@@ -117,13 +118,15 @@ Z9CIPvc7r9AqmfCR4UM+xG5G7VMU8KRDZrmEaKUzHWVmRSolDIGPFGXjv+csAzBA
 15lJOgwBfz5fP8URKwIDAQAB
 -----END PUBLIC KEY-----""")
             print("Saved example keys in " + signing_key + " and " + signing_key + ".pub")
+            print()
             print("To use these example keys, add --config " + args.config + " to your command.")
+            print()
         else:
             key_id = args.key_id or config.get('key_id','')
             config['key_id'] = input("Key Identifier: (%s) " % key_id) or key_id
 
             signing_key = args.signing_key or config.get('signing_key', config['domain_name'] + ".key")
-            config['signing_key'] = input(F"Path to Private RSA signing key file: ({signing_key}) ") or signing_key
+            config['signing_key'] = input(F"Private RSA signing key file: ({signing_key}) ") or signing_key
 
             rsa_key = self.generateKey(config['signing_key'])
 
