@@ -31,7 +31,7 @@ setuptools.setup(
     version=envstring("VERSION"),
     author=envstring("AUTHOR"),
     author_email=envstring("AUTHOR_EMAIL"),
-    entry_points={"console_scripts": ["li-privacy=li_privacy:main"]},
+    entry_points={"console_scripts": ["li-privacy=li_privacy.cli:main"]},
     description=envstring("DESCRIPTION"),
     install_requires=dependencies,
     url=envstring("URL"),

@@ -12,32 +12,7 @@ import os.path
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
-
-# Small utility class to detect email or hash format and hash
-class hash_utility(object):
-
-    # Ugly regex courtesy of https://emailregex.com/
-    EMAIL_PATTERN = """(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
-
-    # 32, 40, or 64 lower-case hexadecimal characters
-    HASH_PATTERN = "^[a-f0-9]{32}([a-f0-9]{8}([a-f0-9]{24})?)?$"
-
-    def hashEmail(self, email_address):
-        bytes = email_address.encode('utf-8')
-        return [
-            hashlib.md5(bytes).hexdigest(),
-            hashlib.sha1(bytes).hexdigest(),
-            hashlib.sha256(bytes).hexdigest()
-        ]
-
-    def getHashes(self, user):
-        user = user.strip().lower()
-        if re.match(self.HASH_PATTERN, user):
-            return [ user ]
-        elif re.match(self.EMAIL_PATTERN , user):
-            return self.hashEmail(user)
-        else:
-            raise Exception("Input does not appear to be a valid email or hash")
+import li_privacy.DSR as DSR
 
 class InitProcessor(object):
     def __init__(self, subparsers):
@@ -176,70 +151,6 @@ Z9CIPvc7r9AqmfCR4UM+xG5G7VMU8KRDZrmEaKUzHWVmRSolDIGPFGXjv+csAzBA
         if not example_configuration:
             self.printProvisioningNotice(args, config)
 
-class DSR(object):
-    def __init__(self, operation, domain_name, scope, callback_url, key_id, rsa_key, endpoint, verbose=False):
-        self.verbose = verbose
-        self.operation = operation
-        self.domain_name = domain_name
-        self.scope = scope
-        self.key_id = key_id
-        self.rsa_key = rsa_key
-        self.callback_url = callback_url
-        self.endpoint = endpoint
-
-    def constructPayload(self, user, request_id=None):
-        hashes = hash_utility().getHashes(user)
-        request_id = request_id or hashes[0]
-        now = int(time.time())
-        payload = { 
-            "iss": "CN=" + self.domain_name,
-            "aud": self.endpoint,
-            "cnf": {
-                "kid": self.key_id
-            },
-            "jti": request_id,
-            "iat": now,
-            "exp": now + 3600,
-            "dsr": {
-                "type": self.operation,
-                "scope": self.scope,
-                "identifiers": [
-                    {
-                        "type": "EMAIL_HASH",
-                        "values": hashes
-                    }
-                ]
-            }
-        }
-        # Set the optional callback_url if specified
-        callback_url = self.callback_url
-        if(callback_url is not None):
-            payload['dsr']['target'] = callback_url
-
-        if(self.verbose):
-            print("JSON payload to encode " + json.dumps(payload, indent=2))
-        return payload
-
-    def encodeJWT(self, payload):
-        result = jwt.encode(payload, self.rsa_key, algorithm="RS256").decode('utf-8')
-        if(self.verbose):
-            print()
-            print("Encoded JWT " + json.dumps(result, indent=2))
-        return result
-
-    def wrapJWT(self, jwt):
-        return { "jwt": jwt }
-
-    def sendRequest(self, body):
-        return requests.post("https://{}/dsr".format(self.endpoint), json=body)
-
-    def submit(self, entry, request_id):
-        payload = self.constructPayload(entry, request_id)
-        jwt = self.encodeJWT(payload) 
-        body = self.wrapJWT(jwt)
-        response = self.sendRequest(body)
-        return (payload, response)
-
 class Processor(object):
     def __init__(self, parser, operation):
         # Setup properties
@@ -289,7 +200,7 @@ class Processor(object):
         if args.verbose:
             print("Staging=%s, Set API endpoint to %s" % (staging, endpoint))
 
-        return DSR(\
+        return DSR.DSR(\
                 operation= self.operation, \
                 domain_name= config['domain_name'], \
                 scope= args.scope or config.get("scope", "US_PRIVACY"), \
@@ -355,26 +266,3 @@ class OptoutProcessor(Processor):
         parser = subparsers.add_parser("optout", \
                 help="submits an optout request for a user.")
         Processor.__init__(self, parser, "OBJECT")
-
-
-def main(name=None):
-    parser = argparse.ArgumentParser(
-            description="Interact with the LiveIntent Privacy API", \
-            epilog="For API documentation, see https://link.liveintent.com/privacy-api")
-    subparsers = parser.add_subparsers(title="actions", dest='command')
-    actions = {
-        "init": InitProcessor(subparsers),
-        "delete":  DeleteProcessor(subparsers),
-        "optout": OptoutProcessor(subparsers)
-    }
-
-    args = parser.parse_args(sys.argv[1:])
-    try:
-        func = actions[args.command]
-    except AttributeError:
-        parser.print_help()
-        return 1
-    func.execute(args)
-
-if __name__ == "__main__":
-    main()
