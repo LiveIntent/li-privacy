@@ -71,3 +71,27 @@ The response in this case indicates that 3 records were opted out. This is due t
 
 To submit requests to the staging environment, add the `--staging` flag.
 To specify a callback URL where you would like to receive the completion notice, add the `--callback_url https://<callback url>`
+
+## Object Hierarchy
+* _ApiRequest - base functionality to talk to our API
+** audience not environment specific. "privacy.liveintent.com"
+** base json document (key JWT fields)
+
+* PingRequest - ApiRequest
+** Relative endpoint
+** dsr.target, dsr.type
+
+* DsrRequest - ApiRequest
+** Relative endpoint
+** Factory for sub-types
+** type field
+** Adds the user/identity fields
+
+* ApiClient
+** Set base URL
+** Submit request
+** Handle Key Management
+** Handle JWT encryption
+** Handle debug/printing information
+
+

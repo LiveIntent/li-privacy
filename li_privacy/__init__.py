@@ -1,15 +1,10 @@
-from li_privacy import DSR
-from li_privacy import DSRProcessor
-from li_privacy import InitProcessor
-from li_privacy import DeleteProcessor
-from li_privacy import OptoutProcessor
-from li_privacy import UserFormatError
+from .DSRProcessor import DSRProcessor
+from .InitProcessor import InitProcessor
+from .DeleteProcessor import DeleteProcessor
+from .OptoutProcessor  import OptoutProcessor
+from .UserFormatError import UserFormatError
+from .Request import Request
+from .ApiClient import ApiClient
 
-DSR = DSR.DSR
-DSRProcessor = DSRProcessor.DSRProcessor
-InitProcessor = InitProcessor.InitProcessor
-DeleteProcessor = DeleteProcessor.DeleteProcessor
-OptoutProcessor = OptoutProcessor.OptoutProcessor
-UserFormatError = UserFormatError.UserFormatError
+from .__version__ import __version__
 
-__version__ = "1.1.0"

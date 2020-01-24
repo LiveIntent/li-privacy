@@ -15,12 +15,18 @@ def main(name=None):
             epilog="For API documentation, see https://link.liveintent.com/privacy-api")
     parser.add_argument('--version', action='version', \
             version='%(prog)s v.{version}'.format(version=li_privacy.__version__))
+
     subparsers = parser.add_subparsers(title="actions", dest='command')
+
     actions = {
-        "init": li_privacy.InitProcessor(subparsers),
-        "delete":  li_privacy.DeleteProcessor(subparsers),
-        "optout": li_privacy.OptoutProcessor(subparsers)
+        "init": li_privacy.InitProcessor(),
+        "delete":  li_privacy.DeleteProcessor(),
+        "optout": li_privacy.OptoutProcessor()
     }
+    for action in actions:
+        processor = actions[action]
+        sub_parser = subparsers.add_parser(action, help=processor.description)
+        processor.setup_argparse(sub_parser)
 
     args = parser.parse_args(sys.argv[1:])
     try:

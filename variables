@@ -1,5 +1,0 @@
-NAME=li_privacy
-AUTHOR="Phillip Markert"
-AUTHOR_EMAIL="phillip@liveintent.com"
-DESCRIPTION="CLI and sample application to interact with the LiveIntent privacy API"
-URL="https://link.liveintent.com/privacy-api"

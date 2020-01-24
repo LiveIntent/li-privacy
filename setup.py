@@ -4,45 +4,36 @@ import setuptools
 
 envstring = lambda var: os.environ.get(var) or ""
 
-try:
-    with open("README.md", "r") as fh:
-        long_description = fh.read()
-except:
-    long_description = ""
+here = os.path.abspath(os.path.dirname(__file__))
+about = {}
 
-if os.path.isfile("variables"):
-    try:
-        with open("variables", "r") as fh:
-            variables = fh.read().strip().split("\n")
-        for v in variables:
-            key, value = v.split("=")
-            os.environ[key] = re.sub("['\"]", "", value)
-    except:
-        pass
+with open(os.path.join(here, 'li_privacy', '__version__.py'), 'r') as f:
+    exec(f.read(), about)
 
-if os.path.isfile("requirements.txt"):
-    with open("requirements.txt", "r") as fh:
-        dependencies = fh.read().strip().split("\n")
-else:
-    dependencies = []
+with open(os.path.join(here, "README.md"), "r") as fh:
+    long_description = fh.read()
 
-import li_privacy
+with open("requirements.txt", "r") as fh:
+    dependencies = fh.read().strip().split("\n")
 
 setuptools.setup(
-    name=envstring("NAME"),
-    version=li_privacy.__version__,
-    author=envstring("AUTHOR"),
-    author_email=envstring("AUTHOR_EMAIL"),
+    name=about['__title__'],
+    version=about['__version__'],
+    author=about['__author__'],
+    author_email=about['__author_email__'],
     entry_points={"console_scripts": ["li-privacy=li_privacy.cli:main"]},
-    description=envstring("DESCRIPTION"),
+    description=about['__description__'],
     install_requires=dependencies,
-    url=envstring("URL"),
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    url=about['__url__'],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=[envstring("NAME")],
+    license=about['__license__'],
+    packages=[about['__title__']],
     classifiers=[
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: MIT License",
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
