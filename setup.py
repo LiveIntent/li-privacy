@@ -26,9 +26,11 @@ if os.path.isfile("requirements.txt"):
 else:
     dependencies = []
 
+import li_privacy
+
 setuptools.setup(
     name=envstring("NAME"),
-    version=envstring("VERSION"),
+    version=li_privacy.__version__,
     author=envstring("AUTHOR"),
     author_email=envstring("AUTHOR_EMAIL"),
     entry_points={"console_scripts": ["li-privacy=li_privacy.cli:main"]},

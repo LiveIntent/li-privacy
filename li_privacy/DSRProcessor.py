@@ -5,6 +5,7 @@ import json
 import time
 import os.path
 import li_privacy.DSR as DSR
+from li_privacy import UserFormatError
 
 class DSRProcessor(object):
     def __init__(self, parser, operation):
@@ -82,25 +83,29 @@ class DSRProcessor(object):
                             user, payload['jti'], response.ok, response.text, payload['iat']), \
                             file=report)
                         print("Processing: {}, success={}".format(user, response.ok))
-                    except:
+                    except UserFormatError.UserFormatError:
                         print("{}\t\t\tSkipped, does not appear to be a valid hash or email\t" \
                             .format(user), file=report)
-                        print("Skipping: {}, does not appear to be a valid hash or email" \
+                        print("Skipping: '{}', does not appear to be a valid hash or email" \
                             .format(user))
         print("Report saved to {}".format(report_name))
 
     def processSingle(self, args, dsr):
-        (payload, response) = dsr.submit(args.user, args.request_id)
-        if(not response.ok):
-            print("ERROR: API call returned an error.")
-            print()
-            self.printHeaders(response)
-        else:
-            if(args.verbose):
-                print("Response received")
+        try:
+            (payload, response) = dsr.submit(args.user, args.request_id)
+            if(not response.ok):
+                print("ERROR: API call returned an error.")
                 print()
                 self.printHeaders(response)
-        print(response.text)
+            else:
+                if(args.verbose):
+                    print("Response received")
+                    print()
+                    self.printHeaders(response)
+            print(response.text)
+        except UserFormatError.UserFormatError:
+            print("ERROR: '{}', does not appear to be a valid hash or email" \
+                .format(args.user))
 
     def execute(self, args):
         dsr = self.prepareDSR(args)

@@ -1,5 +1,6 @@
 import re
 import hashlib
+from li_privacy import UserFormatError
 
 # Small utility class to detect email or hash format and hash
 class hash_utility(object):
@@ -25,4 +26,4 @@ class hash_utility(object):
         elif re.match(self.EMAIL_PATTERN , user):
             return self.hashEmail(user)
         else:
-            raise Exception("Input does not appear to be a valid email or hash")
+            raise UserFormatError.UserFormatError("Input does not appear to be a valid email or hash")
