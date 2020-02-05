@@ -12,7 +12,7 @@ from .DSRProcessor import DSRProcessor
 class InitProcessor(DSRProcessor):
     def __init__(self):
         DSRProcessor.__init__(self, "PING", False)
-        self.description = "sets up the initial configuration, storing parameters in the config file"
+        self.description = "sets account configuration and generates keys"
 
     def setup_argparse(self, parser):
         parser.add_argument("--config", type=str, default="config.json", \
@@ -24,7 +24,7 @@ class InitProcessor(DSRProcessor):
         parser.add_argument("--signing_key", type=str, \
                 help="path to RSA-256 private signing key file. Will generate a new key-pair if missing.")
 
-    def generateKey(self, signing_key):
+    def generate_key(self, signing_key):
         try:
             # Attempt to read existing key
             with open(signing_key) as f:
@@ -55,14 +55,14 @@ class InitProcessor(DSRProcessor):
 
         return private_key
 
-    def printProvisioningNotice(self, args, config):
+    def print_provisioning_notice(self, args, config):
         print("")
         print("To provision your keys, please email the following files to privacy@liveintent.com:")
         print("\t{}".format(args.config))
         print("\t{}.pub".format(config['signing_key']))
         print("")
 
-    def generateExampleConfig(self, args, config):
+    def generate_example_config(self, args, config):
         print("Generating example key and configuration")
         args.config = "dailyplanet.json"
         key_id = config['key_id'] = "key1"
@@ -102,7 +102,7 @@ Z9CIPvc7r9AqmfCR4UM+xG5G7VMU8KRDZrmEaKUzHWVmRSolDIGPFGXjv+csAzBA
         print("To use these example keys, add --config " + args.config + " to your command.")
         print()
 
-    def getDomainName(self, args, config):
+    def get_domain_name(self, args, config):
         domain_name = args.domain_name or config.get('domain_name','')
         while True:
             if domain_name:
@@ -126,12 +126,12 @@ Z9CIPvc7r9AqmfCR4UM+xG5G7VMU8KRDZrmEaKUzHWVmRSolDIGPFGXjv+csAzBA
             print("Creating new config: %s" % args.config)
         print()
 
-        domain_name = self.getDomainName(args, config)
+        domain_name = self.get_domain_name(args, config)
         config['callback_url'] = config.get("callback_url","")
 
         example_configuration = config['domain_name']=="dailyplanet.com"
         if example_configuration:
-            self.generateExampleConfig(args, config)
+            self.generate_example_config(args, config)
         else:
             key_id = args.key_id or config.get('key_id','')
             config['key_id'] = six.moves.input("Key Identifier: (%s) " % key_id) or key_id
@@ -139,11 +139,11 @@ Z9CIPvc7r9AqmfCR4UM+xG5G7VMU8KRDZrmEaKUzHWVmRSolDIGPFGXjv+csAzBA
             signing_key = args.signing_key or config.get('signing_key', config['domain_name'] + ".key")
             config['signing_key'] = six.moves.input("Private RSA signing key file: ({}) ".format(signing_key)) or signing_key
 
-            rsa_key = self.generateKey(config['signing_key'])
+            rsa_key = self.generate_key(config['signing_key'])
 
         # Write config file
         with open(args.config, "w+") as config_file:
             json.dump(config, config_file, indent=2)
         print("Configuration written to {}".format(args.config))
         if not example_configuration:
-            self.printProvisioningNotice(args, config)
+            self.print_provisioning_notice(args, config)
