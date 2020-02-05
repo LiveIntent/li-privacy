@@ -54,7 +54,7 @@ The init command will begin the set up of your account. The program will prompt 
 
 > **TIP:** If you already have an RSA signing key, you may provide the path to it here, otherwise, press <ENTER> for the key-identifier and Private RSA signing key questions and a new key will be automatically generated for you.
 
-To set up your account, run the `init` command:
+To set up your account, run the `init` command. (user provided input surrounded by `**`):
 ```
 $ li-privacy init
 Creating new config: config.json
