@@ -146,6 +146,6 @@ Report saved to path/to/users.txt.20200101120000.tsv
 `delete` commands use the same parameters as `optout` commands, but the command name is `delete`.
 
 ```
-$ li-privacy optout cd2bfcffe5fee4a1149d101994d0987f
+$ li-privacy delete cd2bfcffe5fee4a1149d101994d0987f
 {"reference":"01DZ1TWYBXQ37M0N8VPAKM1RFB", "read":1, "imported":1}
 ```
