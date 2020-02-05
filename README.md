@@ -1,85 +1,150 @@
-# LiveIntent Privacy CLI
+# Installing python and pip
+The li-privacy tool requires python. To verify that you have this installed correctly, you should be able to run the following command from a Terminal/Command Prompt:
 
-CLI to interact with the LiveIntent Privacy API
+```
+$ python3 --version
+  Python 3.7.1
 
-## Install
-### Pip
-
-```sh
-pip install li-privacy
+$ pip3 --version
+  pip 19.3.1 from … (python 3.7)
 ```
 
-## Usage
+> *NOTE:* The specific version of python or pip that you have installed should not matter.
+
+> *ERROR:* If you get an error that python3 or pip3 do not exist, try using:
 ```
-$ li-privacy
-usage: li-privacy [-h] [--version] {init,delete,optout} ...
-
-Interact with the LiveIntent Privacy API
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --version             show program's version number and exit
-
-actions:
-  {init,delete,optout}
-    init                sets account configuration and generates keys
-    delete              submits a data delete request for a user.
-    optout              submits an optout request for a user.
-
-For API documentation, see https://link.liveintent.com/privacy-api
+python --version  # instead of python3
+pip --version     # instead of pip3
 ```
 
-For help with command options, add --help
+If you do not already have python setup, then go download and install the latest version of python/pip for your operating system from https://www.python.org/downloads/.
 
-### `init` command
-Sets up the initial configuration and saves the parameters to a file.
+> *NOTE:* During the installation, if there is an option to add python to your path, please be sure to select that option.
+
+# Installing the li-privacy tool
+Run the following command to automatically download and install the li-privacy client:
 ```
-$ li-privacy init --help
-usage: li-privacy init [-h] [--config CONFIG] [--domain_name DOMAIN_NAME] [--key_id KEY_ID] [--signing_key SIGNING_KEY]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --config CONFIG       path to configuration file (defaults to config.json)
-  --domain_name DOMAIN_NAME
-                        your domain name. Use 'dailyplanet.com' to generate example keys and config
-  --key_id KEY_ID       the signing key identifier
-  --signing_key SIGNING_KEY
-                        path to RSA-256 private signing key file. Will generate a new key-pair if missing.
+$ pip3 install li-privacy
+  ...
+  Installation takes place
+  ...
+Successfully installed li-privacy
 ```
 
-All flags are optional; you will be prompted to enter values if none have been specified.
+> *ERROR:* Depending upon your python installation and permissions, you may receive an error that files or directories cannot be written. If this happens you can re-run the command with sudo:
+```
+$ sudo pip3 install li-privacy
+```
 
+or you may have success installing the package in "user" mode:
+```
+$ pip3 install --user li-privacy
+```
+
+To verify that the tool has been properly installed, run:
+```
+$ li-privacy --version
+  li-privacy v.1.2.2
+```
+
+> *ERROR:* If you receive an error that li-privacy does not exist, then your python/pip installation is not properly setup to place installed modules in your executable path.
+
+# Configuring your account and generating keys
+The init command will begin the set up of your account. The program will prompt you for your company's domain name (for example, liveintent.com), a key-identifier, and the path to your signing key.
+
+> *TIP:* If you already have an RSA signing key, you may provide the path to it here, otherwise, press <ENTER> for the key-identifier and Private RSA signing key questions and a new key will be automatically generated for you.
+
+To set up your account, run the `init` command:
 ```
 $ li-privacy init
 Creating new config: config.json
 
-Your domain name: publisher.com
-Key Identifier: (key1) <ENTER>
-Private RSA signing key file: (publisher.com.key) <ENTER>
+Your domain name: *publisher.com*
+Key Identifier: (key1) *<ENTER>*
+Private RSA signing key file: (publisher.com.key) *<ENTER>*
+
 Generated new keys in publisher.com.key and publisher.com.key.pub
 Configuration written to config.json
 
 To provision your keys, please email the following files to privacy@liveintent.com:
-	config.json
-	publisher.com.key.pub
-
+    config.json
+    publisher.com.key.pub
 ```
 
-If you already have an RSA signing key, you may provide the path to the existing file, otherwise, a new key will be generated.
-You must submit your RSA public key (NOT YOUR PRIVATE KEY) and the config.json to the specified email address to have your account
-provisioned and activated.
+The initialization process generates the following files:
+| Filename             |  Description                                                |
+| -------------------- | ----------------------------------------------------------- |
+| config.json          | Contains the settings for your account. Send to LiveIntent. |
+| <domainname>.key.pub | Your public RSA Key. Send to LiveIntent.                    |
+| <domainname>.key     | Your private RSA Key. DO NOT SEND outside your company.     |
 
-### `optout` and `delete` commands
-`optout` and `delete` commands make use of the configured values and keys specified via the `init` command. 
-You may use an alternative configuration file by passing  the `--config` option.
+Once you have completed this process, email the two files to privacy@liveintent.com. Once your account has been setup, you will be notified and ready to submit transactions.
 
-To `optout` a single user by email address:
+> *WARNING:* Be careful to submit the correct files, as the public and private key filenames are very similar.
+
+# Using the dailyplanet.com example account
+While you wait for your own account to be provisioned, you can utilize the example credentials provided in the API guide to submit practice requests to the staging system. As a convenience, the li-privacy tool will generate these for you.
+
+Re-run the init command and when prompted for the domain name, enter "dailyplanet.com".
+
+```
+$ li-privacy init
+Using existing config: config.json
+
+Your domain name: *dailyplanet.com*
+
+Generating example key and configuration
+Saved example keys in dailyplanet.com.key and dailyplanet.com.key.pub
+
+Configuration written to dailyplanet.json
+```
+
+To make use these example keys, simply add `--config dailyplanet.config` when running your command.
+
+The daily planet configuration and keys are now available via the "dailyplanet.json" file. Pass the `--config dailyplanet.json` flag to use this account,.
+
+```
+$ li-privacy optout user@domain.com --config dailyplanet.json
+{"reference":"01DZ1W5VCT6F0M1V345F8G07GY", "read":3, "imported":3}
+```
+
+# Using the li-privacy tool to optout or delete users
+The following commands will only work after LiveIntent has provisioned your public key. While you wait for your keys to be established, you may use the dailyplanet.com example account for practice.
+
+## Opt out a single user
+To opt out a single user, call the `optout` command and provide a hash or an email address.
+
+Opt out by hash example:
+```
+$ li-privacy optout cd2bfcffe5fee4a1149d101994d0987f
+{"reference":"01DZ1TWYBXQ37M0N8VPAKM1RFB", "read":1, "imported":1}
+```
+
+If the command is successful, it will show a reference number and the number of records that were processed.
+
+> *NOTE:* If an email address is specified, the address will automatically be hashed as MD5, SHA1, and SHA256 before submitting (thus the result shows 3 records):
+
+Opt out by email example:
 ```
 $ li-privacy optout user@domain.com
-{"reference":"01DYQAE3BV146Z1MX03B4J0RSM", "read":3, "imported":3}
+{"reference":"01DZ1KBHPKBRJG1D1DT8HP0ZBQ", "read":3, "imported":3}
 ```
 
-The response in this case indicates that 3 records were opted out. This is due to the md5, sha1, and sha256 values for the specified email address.
+## Opting out a list of users
+If you have multiple users to opt out, you can specify the path to a text file containing the list of users. Each line in the file will be processed as a separate request and a report will be generated. The file should contain one email address or one hash per line, with no other columns or data.
 
-To submit requests to the staging environment, add the `--staging` flag.
-To specify a callback URL where you would like to receive the completion notice, add the `--callback_url https://<callback url>`
+Opt out multiple users example:
+```
+$ li-privacy optout path/to/users.txt
+Processing users from file path/to/users.txt
+...
+Report saved to path/to/users.txt.20200101120000.tsv
+```
+
+## Deleting users
+`delete` commands use the same parameters as `optout` commands, but the command name is `delete`.
+
+```
+$ li-privacy optout cd2bfcffe5fee4a1149d101994d0987f
+{"reference":"01DZ1TWYBXQ37M0N8VPAKM1RFB", "read":1, "imported":1}
+```
