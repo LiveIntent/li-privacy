@@ -9,9 +9,9 @@ $ pip3 --version
   pip 19.3.1 from … (python 3.7)
 ```
 
-> *NOTE:* The specific version of python or pip that you have installed should not matter.
+> **NOTE:** The specific version of python or pip that you have installed should not matter.
 
-> *ERROR:* If you get an error that python3 or pip3 do not exist, try using:
+> **ERROR:** If you get an error that python3 or pip3 do not exist, try using:
 ```
 python --version  # instead of python3
 pip --version     # instead of pip3
@@ -19,7 +19,7 @@ pip --version     # instead of pip3
 
 If you do not already have python setup, then go download and install the latest version of python/pip for your operating system from https://www.python.org/downloads/.
 
-> *NOTE:* During the installation, if there is an option to add python to your path, please be sure to select that option.
+> **NOTE:** During the installation, if there is an option to add python to your path, please be sure to select that option.
 
 # Installing the li-privacy tool
 Run the following command to automatically download and install the li-privacy client:
@@ -31,7 +31,7 @@ $ pip3 install li-privacy
 Successfully installed li-privacy
 ```
 
-> *ERROR:* Depending upon your python installation and permissions, you may receive an error that files or directories cannot be written. If this happens you can re-run the command with sudo:
+> **ERROR:** Depending upon your python installation and permissions, you may receive an error that files or directories cannot be written. If this happens you can re-run the command with sudo:
 ```
 $ sudo pip3 install li-privacy
 ```
@@ -47,21 +47,21 @@ $ li-privacy --version
   li-privacy v.1.2.2
 ```
 
-> *ERROR:* If you receive an error that li-privacy does not exist, then your python/pip installation is not properly setup to place installed modules in your executable path.
+> **ERROR:** If you receive an error that li-privacy does not exist, then your python/pip installation is not properly setup to place installed modules in your executable path.
 
 # Configuring your account and generating keys
 The init command will begin the set up of your account. The program will prompt you for your company's domain name (for example, liveintent.com), a key-identifier, and the path to your signing key.
 
-> *TIP:* If you already have an RSA signing key, you may provide the path to it here, otherwise, press <ENTER> for the key-identifier and Private RSA signing key questions and a new key will be automatically generated for you.
+> **TIP:** If you already have an RSA signing key, you may provide the path to it here, otherwise, press <ENTER> for the key-identifier and Private RSA signing key questions and a new key will be automatically generated for you.
 
 To set up your account, run the `init` command:
 ```
 $ li-privacy init
 Creating new config: config.json
 
-Your domain name: *publisher.com*
-Key Identifier: (key1) *<ENTER>*
-Private RSA signing key file: (publisher.com.key) *<ENTER>*
+Your domain name: **publisher.com**
+Key Identifier: (key1) **<ENTER>**
+Private RSA signing key file: (publisher.com.key) **<ENTER>**
 
 Generated new keys in publisher.com.key and publisher.com.key.pub
 Configuration written to config.json
@@ -72,6 +72,7 @@ To provision your keys, please email the following files to privacy@liveintent.c
 ```
 
 The initialization process generates the following files:
+
 | Filename             |  Description                                                |
 | -------------------- | ----------------------------------------------------------- |
 | config.json          | Contains the settings for your account. Send to LiveIntent. |
@@ -80,7 +81,7 @@ The initialization process generates the following files:
 
 Once you have completed this process, email the two files to privacy@liveintent.com. Once your account has been setup, you will be notified and ready to submit transactions.
 
-> *WARNING:* Be careful to submit the correct files, as the public and private key filenames are very similar.
+> **WARNING:** Be careful to submit the correct files, as the public and private key filenames are very similar.
 
 # Using the dailyplanet.com example account
 While you wait for your own account to be provisioned, you can utilize the example credentials provided in the API guide to submit practice requests to the staging system. As a convenience, the li-privacy tool will generate these for you.
@@ -91,7 +92,7 @@ Re-run the init command and when prompted for the domain name, enter "dailyplane
 $ li-privacy init
 Using existing config: config.json
 
-Your domain name: *dailyplanet.com*
+Your domain name: **dailyplanet.com**
 
 Generating example key and configuration
 Saved example keys in dailyplanet.com.key and dailyplanet.com.key.pub
@@ -122,7 +123,7 @@ $ li-privacy optout cd2bfcffe5fee4a1149d101994d0987f
 
 If the command is successful, it will show a reference number and the number of records that were processed.
 
-> *NOTE:* If an email address is specified, the address will automatically be hashed as MD5, SHA1, and SHA256 before submitting (thus the result shows 3 records):
+> **NOTE:** If an email address is specified, the address will automatically be hashed as MD5, SHA1, and SHA256 before submitting (thus the result shows 3 records):
 
 Opt out by email example:
 ```
