@@ -22,7 +22,8 @@ def main(name=None):
         "init": li_privacy.InitProcessor(),
         "delete":  li_privacy.DeleteProcessor(),
         "optout": li_privacy.OptoutProcessor(),
-        "ping": li_privacy.PingProcessor()
+        "ping": li_privacy.PingProcessor(),
+        "hash": li_privacy.HashProcessor()
     }
     for action in actions:
         processor = actions[action]

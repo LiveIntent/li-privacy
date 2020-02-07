@@ -18,7 +18,7 @@ class User(object):
             self.user_type = "hash"
             self.hashes = [ string ]
         else:
-            raise UserFormatError.UserFormatError("Input does not appear to be a valid email or hash")
+            raise UserFormatError("Input does not appear to be a valid email or hash")
 
     def hash_email(self, email_address):
         bytes = email_address.encode('utf-8')
