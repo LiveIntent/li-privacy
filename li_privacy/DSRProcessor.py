@@ -106,8 +106,12 @@ class DSRProcessor(object):
             print("Loading configuration from %s" % args.config)
 
         # Read the config file
-        with open(args.config) as config_json:
-            self.config = json.load(config_json)
+        try:
+            with open(args.config) as config_json:
+                self.config = json.load(config_json)
+        except FileNotFoundError:
+            print("Configuration file %s not found.  Run init command to perform initial setup.\n(Are you running from the wrong directory?)" % args.config)
+            sys.exit(1)
 
         self.config['verbose'] = args.verbose
         if self.config['verbose']:
