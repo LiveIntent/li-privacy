@@ -1,60 +1,52 @@
 # Installing python and pip
-The li-privacy tool requires python. To verify that you have this installed correctly, you should be able to run the following command from a Terminal/Command Prompt:
+The li-privacy tool requires python. Having python and pip setup properly is probably the trickiest part of this whole setup. (Why, oh why, is python so difficult to properly setup?) 
+
+To verify that you have python and pip installed correctly, you should be able to run the following command from a Terminal/Command Prompt:
 
 ```
-$ python3 --version
-  Python 3.7.1
-
-$ pip3 --version
-  pip 19.3.1 from … (python 3.7)
+$ python --version
+$ pip --version
 ```
 
-> **NOTE:** The specific version of python or pip that you have installed should not matter.
-
-> **ERROR:** If you get an error that python3 or pip3 do not exist, try using:
+> **TIP:** If you get an error that python or pip do not exist, consider trying:
 ```
-python --version  # instead of python3
-pip --version     # instead of pip3
+$ python3 --version  # instead of python
+$ pip3 --version     # instead of pip
 ```
 
-If you do not already have python setup, then go download and install the latest version of python/pip for your operating system from https://www.python.org/downloads/.
+Still no luck? Then go download and install the latest version of python/pip for your operating system from https://www.python.org/downloads/.
 
-> **NOTE:** During the installation, if there is an option to add python to your path, please be sure to select that option.
+> **TIP:** During the installation, if there is an option to add python to your path, please be sure to select that option!
 
 # Installing the li-privacy tool
 Run the following command to automatically download and install the li-privacy client:
 ```
-$ pip3 install li-privacy
+$ pip install li-privacy
   ...
-  Installation takes place
+  [ Installation takes place... lots of ... stuff ]
   ...
 Successfully installed li-privacy
 ```
 
-> **ERROR:** Depending upon your python installation and permissions, you may receive an error that files or directories cannot be written. If this happens you can re-run the command with sudo:
+> **TIP:** Depending upon your python installation and user permissions, you may receive an error that some files or directories cannot be written. This is a common problem with python setups. If this happens you have a few options. One is to try re-running the command-prompt as an administrator or using `sudo` if you are on Mac/Linux. Another option  is to try installing the package in "user" mode:
 ```
-$ sudo pip3 install li-privacy
-```
-
-or you may have success installing the package in "user" mode:
-```
-$ pip3 install --user li-privacy
+$ pip install --user li-privacy
 ```
 
-To verify that the tool has been properly installed, run:
+To verify that the `li-privacy` tool has been properly installed, run:
 ```
 $ li-privacy --version
   li-privacy v.1.2.2
 ```
 
-> **ERROR:** If you receive an error that li-privacy does not exist, then your python/pip installation is not properly setup to place installed modules in your executable path.
+> **ERROR:** If you receive an error that li-privacy does not exist, then your python/pip installation is not setup to place installed modules in your executable PATH.
 
 # Configuring your account and generating keys
-The init command will begin the set up of your account. The program will prompt you for your company's domain name (for example, liveintent.com), a key-identifier, and the path to your signing key.
+The `li-privacy init` command will begin the set up of your account. The program will prompt you for your company's domain name (i.e. liveintent.com), a key-identifier, and the path to your RSSA signing key (if you want to use an existing one).
 
-> **TIP:** If you already have an RSA signing key, you may provide the path to it here, otherwise, press <ENTER> for the key-identifier and Private RSA signing key questions and a new key will be automatically generated for you.
+> **TIP:** If you do not already have an RSA signing key (which is usually the case), you may press `<ENTER>` for the key-identifier and Private RSA signing key prompts and a new key will be automatically generated for you.
 
-To set up your account, run the `init` command. (user provided input surrounded by `**`):
+To set up your account, run the `li-privacy init` command. (NOTE: user provided inputs are indicated by `**`):
 ```
 $ li-privacy init
 Creating new config: config.json
@@ -73,11 +65,11 @@ To provision your keys, please email the following files to privacy@liveintent.c
 
 The initialization process generates the following files:
 
-| Filename             |  Description                                                |
-| -------------------- | ----------------------------------------------------------- |
-| config.json          | Contains the settings for your account. Send to LiveIntent. |
-| <domainname>.key.pub | Your public RSA Key. Send to LiveIntent.                    |
-| <domainname>.key     | Your private RSA Key. DO NOT SEND outside your company.     |
+| Filename               |  Description                                                |
+| ---------------------- | ----------------------------------------------------------- |
+| config.json            | Contains the settings for your account. Send to LiveIntent. |
+| <<domainname>>.key.pub | Your public RSA Key. Send to LiveIntent.                    |
+| <<domainname>>.key     | Your private RSA Key. DO NOT SEND outside your company.     |
 
 Once you have completed this process, email the two files to privacy@liveintent.com. Once your account has been setup, you will be notified and ready to submit transactions.
 
