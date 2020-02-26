@@ -65,11 +65,11 @@ To provision your keys, please email the following files to privacy@liveintent.c
 
 The initialization process generates the following files:
 
-| Filename               |  Description                                                |
-| ---------------------- | ----------------------------------------------------------- |
-| config.json            | Contains the settings for your account. Send to LiveIntent. |
-| <<domainname>>.key.pub | Your public RSA Key. Send to LiveIntent.                    |
-| <<domainname>>.key     | Your private RSA Key. DO NOT SEND outside your company.     |
+| Filename              |  Description                                                |
+| --------------------- | ----------------------------------------------------------- |
+| config.json           | Contains the settings for your account. Send to LiveIntent. |
+| {domain_name}.key.pub | Your public RSA Key. Send to LiveIntent.                    |
+| {domain_name}.key     | Your private RSA Key. DO NOT SEND outside your company.     |
 
 Once you have completed this process, email the two files to privacy@liveintent.com. Once your account has been setup, you will be notified and ready to submit transactions.
 
