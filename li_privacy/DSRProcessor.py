@@ -56,8 +56,7 @@ class DSRProcessor(object):
                 print()
         print(response.text)
 
-    def process_request(self, user):
-        request = self.construct_request(user)
+    def process_request(self, request):
         if self.config["verbose"]:
             print("Request: {}".format(request))
         return self.api_client.submit(request)
@@ -69,12 +68,14 @@ class DSRProcessor(object):
             print("\t".join([ "user", "request_id", "response.ok", "response.text", "timestamp" ]), file=report)
             with open(filename, "r") as hashlist:
                 for line in hashlist:
-                    user = User(line.strip())
+                    line = line.strip()
+                    user = User(line)
                     try:
-                        response = self.process_request(user)
-                        print("\t".join([ user, payload['jti'], response.ok, response.text, payload['iat'] ]), \
+                        request = self.construct_request(user)
+                        response = self.process_request(request)
+                        print("\t".join([ line, request.request_id, str(response.ok), response.text, str(request.iat) ]), \
                             file=report)
-                        print("Processing: {}, success={}".format(user, response.ok))
+                        print("Processing: {}, success={}".format(line, response.ok))
                     except UserFormatError:
                         print("\t".join([ user, "", "", "Skipped, does not appear to be a valid hash or email", "" ]), \
                             file=report)
@@ -85,7 +86,8 @@ class DSRProcessor(object):
     def process_single(self, user):
         try:
             user = User(user)
-            response = self.process_request(user)
+            request = self.construct_request(user)
+            response = self.process_request(request)
             self.print_response(response)
         except UserFormatError:
             print("ERROR: '{}', does not appear to be a valid hash or email" \
