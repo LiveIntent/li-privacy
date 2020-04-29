@@ -3,10 +3,10 @@ import json
 import requests
 
 class ApiClient(object):
-    def __init__(self, endpoint, rsa_key, verbose):
+    def __init__(self, hostname, rsa_key, verbose):
         self.verbose = verbose
         self.rsa_key = rsa_key
-        self.endpoint = endpoint
+        self.hostname = hostname
 
     def encode_jwt(self, payload):
         return jwt.encode(payload, self.rsa_key, algorithm="RS256").decode('utf-8')
@@ -15,7 +15,7 @@ class ApiClient(object):
         return { "jwt": jwt }
 
     def send_request(self, path, body):
-        return requests.post("https://{}/{}".format(self.endpoint, path), json=body)
+        return requests.post("https://{}/{}".format(self.hostname, path), json=body)
 
     def submit(self, request):
         jwt = self.encode_jwt(request.json()) 

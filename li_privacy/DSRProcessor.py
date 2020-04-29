@@ -120,20 +120,20 @@ class DSRProcessor(object):
             print("Loaded configuration %s" % json.dumps(self.config, indent=2))
 
     def _setup_api_client(self, args):
-        # Setup api_client with proper environment endpoint
-        if 'endpoint' not in self.config:
+        # Setup api_client with proper environment hostname
+        if 'hostname' not in self.config:
             if self.config['staging']:
-                self.config["endpoint"] = "gdpr-test.cph.liveintent.com"
+                self.config["hostname"] = "gdpr-test.cph.liveintent.com"
             else:
-                self.config["endpoint"] = "privacy.liadm.com"
+                self.config["hostname"] = "privacy.liadm.com"
         if self.config['verbose']:
-            print("Staging=%s, Set API endpoint to %s" % (self.config['staging'], self.config["endpoint"]))
+            print("Staging=%s, Set API hostname to %s" % (self.config['staging'], self.config["hostname"]))
 
         # Load signing key
         with open(self.config.get("signing_key")) as key_file:
             rsa_key = key_file.read()
 
-        self.api_client = ApiClient(self.config["endpoint"], rsa_key, self.config["verbose"])
+        self.api_client = ApiClient(self.config["hostname"], rsa_key, self.config["verbose"])
 
     def _initialize(self, args):
         self._load_config(args)
