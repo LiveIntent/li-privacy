@@ -104,7 +104,7 @@ class DSRProcessor(object):
             self.config["request_id"] = args.request_id
 
     def _load_config(self, args):
-        if args.verbose: 
+        if args.verbose:
             print("Loading configuration from %s" % args.config)
 
         # Read the config file
@@ -121,10 +121,11 @@ class DSRProcessor(object):
 
     def _setup_api_client(self, args):
         # Setup api_client with proper environment endpoint
-        if self.config['staging']:
-            self.config["endpoint"] = "gdpr-test.cph.liveintent.com"
-        else: 
-            self.config["endpoint"] = "privacy.liadm.com"
+        if 'endpoint' not in self.config:
+            if self.config['staging']:
+                self.config["endpoint"] = "gdpr-test.cph.liveintent.com"
+            else:
+                self.config["endpoint"] = "privacy.liadm.com"
         if self.config['verbose']:
             print("Staging=%s, Set API endpoint to %s" % (self.config['staging'], self.config["endpoint"]))
 
