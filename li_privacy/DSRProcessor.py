@@ -123,7 +123,7 @@ class DSRProcessor(object):
         # Setup api_client with proper environment hostname
         if 'hostname' not in self.config:
             if self.config['staging']:
-                self.config["hostname"] = "gdpr-test.cph.liveintent.com"
+                self.config["hostname"] = "privacy-test.liadm.com"
             else:
                 self.config["hostname"] = "privacy.liadm.com"
         if self.config['verbose']:
