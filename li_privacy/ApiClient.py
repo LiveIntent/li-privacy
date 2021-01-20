@@ -15,12 +15,12 @@ class ApiClient(object):
         return { "jwt": jwt }
 
     def send_request(self, path, body):
-        return requests.post("https://{}/{}".format(self.hostname, path), json=body)
+        url = "https://{}/{}".format(self.hostname, path)
+        if(self.verbose):
+            print("Curl equivalent:\n curl -X POST -H 'Content-type: application/json' -d '{data}' '{url}'".format(data=json.dumps(body), url=url))
+        return requests.post(url, json=body)
 
     def submit(self, request):
         jwt = self.encode_jwt(request.json()) 
         body = self.wrap_jwt(jwt)
-        if(self.verbose):
-            print()
-            print("Request body: " + json.dumps(body))
         return self.send_request(request.path, body)

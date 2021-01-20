@@ -1,7 +1,7 @@
 __title__ = 'li_privacy'
 __description__ = 'CLI and sample application to interact with the LiveIntent privacy API'
 __url__ = 'https://link.liveintent.com/privacy-api'
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 __author__ = 'Phillip Markert'
 __author_email__ = 'phillip@liveintent.com'
 __license__ = 'Apache 2.0'
