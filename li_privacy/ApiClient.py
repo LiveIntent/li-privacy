@@ -9,7 +9,7 @@ class ApiClient(object):
         self.hostname = hostname
 
     def encode_jwt(self, payload):
-        return jwt.encode(payload, self.rsa_key, algorithm="RS256").decode('utf-8')
+        return jwt.encode(payload, self.rsa_key, algorithm="RS256")
 
     def wrap_jwt(self, jwt):
         return { "jwt": jwt }
